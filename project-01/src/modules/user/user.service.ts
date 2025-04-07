@@ -12,33 +12,34 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private userRepository: Repository<User>,
   ) {}
+  // Create a new user
   async create(CreateUserDto: CreateUserDto): Promise<User> {
-    // const { password, ...userData } = CreateUserDto;
+    const { password, ...userData } = CreateUserDto;
     // Check if user already exists
     const existingUser = await this.userRepository.findOne({
       where: {
-        email: CreateUserDto.email,
         username: CreateUserDto.username,
+        email: CreateUserDto.email,
       },
     });
     if (existingUser) {
       throw new Error('User already exists');
     }
     // Hash the password
-    // const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
     // Create a new user
-    // const user = this.userRepository.create({
-    //   ...userData,
-    //   password: hashedPassword,
-    // });
-    const user = this.userRepository.create(CreateUserDto);
+    const user = this.userRepository.create({
+      ...userData,
+      password: hashedPassword,
+    });
     return this.userRepository.save(user);
   }
   async findAll(): Promise<User[]> {
     return this.userRepository.find();
   }
+  // Get one user by ID
   async findOne(id: number): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id },
@@ -70,6 +71,7 @@ export class UserService {
     if (!user) {
       throw new Error('User not found');
     }
+    // Delete the user
     await this.userRepository.delete(id);
   }
 }

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Put, Body, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Body,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,8 +23,20 @@ export class UserController {
   }
   // Get one user by ID
   @Get(':id')
-  async findOne(id: number): Promise<User> {
-    return this.userService.findOne(id);
+  async findOne(@Param('id') id: number): Promise<ApiResponse<User>> {
+    try {
+      const user = await this.userService.findOne(id);
+      return {
+        status: true,
+        message: 'User found successfully',
+        data: user,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        message: error.message,
+      };
+    }
   }
   // Update user by ID
   @Post()
@@ -33,10 +53,11 @@ export class UserController {
     } catch (error) {
       return {
         status: false,
-        message: String(error.message),
+        message: error.message,
       };
     }
   }
+  // Update user by ID
   @Put(':id')
   async update(
     @Param('id') id: number,
@@ -52,7 +73,23 @@ export class UserController {
     } catch (error) {
       return {
         status: false,
-        message: String(error.message),
+        message: error.message,
+      };
+    }
+  }
+  // Delete user by ID
+  @Delete(':id')
+  async remove(@Param('id') id: number): Promise<ApiResponse<User>> {
+    try {
+      await this.userService.remove(id);
+      return {
+        status: true,
+        message: 'User deleted successfully',
+      };
+    } catch (error) {
+      return {
+        status: false,
+        message: error.message,
       };
     }
   }
